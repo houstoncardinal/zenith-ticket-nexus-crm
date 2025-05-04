@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import TicketsPage from "./pages/TicketsPage";
 import TicketDetail from "./pages/TicketDetail";
 import CustomersPage from "./pages/CustomersPage";
+import CustomerDetail from "./pages/CustomerDetail";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "./contexts/AppContext";
 
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/tickets" element={<TicketsPage />} />
               <Route path="/tickets/:id" element={<TicketDetail />} />
               <Route path="/customers" element={<CustomersPage />} />
+              <Route path="/customers/:id" element={<CustomerDetail />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
