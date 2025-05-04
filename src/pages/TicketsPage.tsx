@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,25 +36,58 @@ import {
   Search,
   Tag,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import NewTicketForm from "@/components/tickets/NewTicketForm";
 
 const TicketsPage = () => {
-  const { state } = useAppContext();
+  const { state, updateTicket, deleteTicket } = useAppContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [sortMethod, setSortMethod] = useState("newest");
+  const [isNewTicketDialogOpen, setIsNewTicketDialogOpen] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Filter tickets based on search query and status
-  const filteredTickets = state.tickets.filter(ticket => {
-    const matchesSearch = 
-      ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ticket.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ticket.description.toLowerCase().includes(searchQuery.toLowerCase());
+  const filterTickets = () => {
+    let filtered = state.tickets.filter(ticket => {
+      const matchesSearch = 
+        ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ticket.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ticket.description.toLowerCase().includes(searchQuery.toLowerCase());
+        
+      const matchesStatus = selectedStatus === "all" || ticket.status === selectedStatus;
       
-    const matchesStatus = selectedStatus === "all" || ticket.status === selectedStatus;
+      return matchesSearch && matchesStatus;
+    });
     
-    return matchesSearch && matchesStatus;
-  });
+    // Sort tickets based on selected sort method
+    switch (sortMethod) {
+      case "newest":
+        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+      case "oldest":
+        filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        break;
+      case "priority-high":
+        const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+        filtered.sort((a, b) => priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder]);
+        break;
+      case "priority-low":
+        const priorityOrderReversed = { urgent: 1, high: 2, medium: 3, low: 4 };
+        filtered.sort((a, b) => priorityOrderReversed[b.priority as keyof typeof priorityOrderReversed] - priorityOrderReversed[a.priority as keyof typeof priorityOrderReversed]);
+        break;
+    }
+    
+    return filtered;
+  };
   
-  // Get customer by ID - this would access the customers data from context in a real app
+  const filteredTickets = filterTickets();
+  
+  // Get customer by ID
   const getCustomerName = (customerId: string) => {
     const customer = state.customers.find(c => c.id === customerId);
     return customer ? customer.name : "Unknown Customer";
@@ -117,13 +151,56 @@ const TicketsPage = () => {
       </div>
     );
   };
+
+  // Handle ticket action menu options
+  const handleTicketAction = (actionType: string, ticket: any) => {
+    switch (actionType) {
+      case "view":
+        navigate(`/tickets/${ticket.id}`);
+        break;
+      case "assign":
+        // In a real app, you'd open a dialog to select an agent
+        const randomAgentId = state.agents[Math.floor(Math.random() * state.agents.length)].id;
+        updateTicket(ticket.id, { agentId: randomAgentId });
+        toast({
+          title: "Ticket Assigned",
+          description: `Ticket ${ticket.id} assigned to agent.`,
+          duration: 3000
+        });
+        break;
+      case "resolve":
+        updateTicket(ticket.id, { status: "resolved" });
+        toast({
+          title: "Ticket Resolved",
+          description: `Ticket ${ticket.id} marked as resolved.`,
+          duration: 3000
+        });
+        break;
+      case "close":
+        updateTicket(ticket.id, { status: "closed" });
+        toast({
+          title: "Ticket Closed",
+          description: `Ticket ${ticket.id} has been closed.`,
+          duration: 3000
+        });
+        break;
+      case "delete":
+        deleteTicket(ticket.id);
+        toast({
+          title: "Ticket Deleted",
+          description: `Ticket ${ticket.id} has been deleted.`,
+          duration: 3000
+        });
+        break;
+    }
+  };
   
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-gray-800">Tickets</h1>
         
-        <Button>
+        <Button onClick={() => setIsNewTicketDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> New Ticket
         </Button>
       </div>
@@ -150,8 +227,13 @@ const TicketsPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">4 require action</p>
+            <div className="text-2xl font-bold">
+              {state.tickets.filter(t => t.agentId === "AGENT-001").length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {state.tickets.filter(t => t.agentId === "AGENT-001" && 
+                (t.status === "open" || t.status === "in_progress")).length} require action
+            </p>
           </CardContent>
         </Card>
         
@@ -162,8 +244,15 @@ const TicketsPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5</div>
-            <p className="text-xs text-muted-foreground">2 high priority</p>
+            <div className="text-2xl font-bold">
+              {state.tickets.filter(t => t.dueDate && 
+                new Date(t.dueDate).toDateString() === new Date().toDateString()).length || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {state.tickets.filter(t => t.dueDate && 
+                new Date(t.dueDate).toDateString() === new Date().toDateString() && 
+                t.priority === "high").length || 0} high priority
+            </p>
           </CardContent>
         </Card>
         
@@ -174,7 +263,7 @@ const TicketsPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24m</div>
+            <div className="text-2xl font-bold">{state.stats.responseTime}</div>
             <p className="text-xs text-muted-foreground">5% faster than last week</p>
           </CardContent>
         </Card>
@@ -204,10 +293,18 @@ const TicketsPage = () => {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Sort options</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Newest first</DropdownMenuItem>
-                <DropdownMenuItem>Oldest first</DropdownMenuItem>
-                <DropdownMenuItem>Priority: High to Low</DropdownMenuItem>
-                <DropdownMenuItem>Priority: Low to High</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortMethod("newest")}>
+                  Newest first
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortMethod("oldest")}>
+                  Oldest first
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortMethod("priority-high")}>
+                  Priority: High to Low
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortMethod("priority-low")}>
+                  Priority: Low to High
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -245,7 +342,11 @@ const TicketsPage = () => {
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8">
                       <div className="text-muted-foreground">No tickets found</div>
-                      <Button variant="outline" className="mt-2">
+                      <Button 
+                        variant="outline" 
+                        className="mt-2" 
+                        onClick={() => setIsNewTicketDialogOpen(true)}
+                      >
                         <Plus className="mr-2 h-4 w-4" /> Create Ticket
                       </Button>
                     </TableCell>
@@ -286,11 +387,28 @@ const TicketsPage = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Assign Ticket</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("view", ticket)}>
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("assign", ticket)}>
+                              Assign Ticket
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Mark Resolved</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">Close Ticket</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("resolve", ticket)}>
+                              Mark Resolved
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleTicketAction("close", ticket)}
+                              className="text-red-600"
+                            >
+                              Close Ticket
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleTicketAction("delete", ticket)}
+                              className="text-red-600"
+                            >
+                              Delete Ticket
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -318,9 +436,21 @@ const TicketsPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTickets
-                  .filter(ticket => ticket.status === "open")
-                  .map((ticket) => (
+                {filteredTickets.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      <div className="text-muted-foreground">No open tickets found</div>
+                      <Button 
+                        variant="outline" 
+                        className="mt-2"
+                        onClick={() => setIsNewTicketDialogOpen(true)}
+                      >
+                        <Plus className="mr-2 h-4 w-4" /> Create Ticket
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredTickets.map((ticket) => (
                     <TableRow key={ticket.id} className="group">
                       <TableCell>
                         <Link to={`/tickets/${ticket.id}`} className="hover:underline group-hover:text-blue-600">
@@ -355,16 +485,28 @@ const TicketsPage = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Assign Ticket</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("view", ticket)}>
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("assign", ticket)}>
+                              Assign Ticket
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Mark Resolved</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">Close Ticket</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("resolve", ticket)}>
+                              Mark Resolved
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleTicketAction("close", ticket)}
+                              className="text-red-600"
+                            >
+                              Close Ticket
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -386,9 +528,14 @@ const TicketsPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTickets
-                  .filter(ticket => ticket.status === "in_progress")
-                  .map((ticket) => (
+                {filteredTickets.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      <div className="text-muted-foreground">No tickets in progress</div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredTickets.map((ticket) => (
                     <TableRow key={ticket.id} className="group">
                       <TableCell>
                         <Link to={`/tickets/${ticket.id}`} className="hover:underline group-hover:text-blue-600">
@@ -423,16 +570,28 @@ const TicketsPage = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Assign Ticket</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("view", ticket)}>
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("assign", ticket)}>
+                              Assign Ticket
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Mark Resolved</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">Close Ticket</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("resolve", ticket)}>
+                              Mark Resolved
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleTicketAction("close", ticket)}
+                              className="text-red-600"
+                            >
+                              Close Ticket
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -454,9 +613,14 @@ const TicketsPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTickets
-                  .filter(ticket => ticket.status === "resolved")
-                  .map((ticket) => (
+                {filteredTickets.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      <div className="text-muted-foreground">No resolved tickets</div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredTickets.map((ticket) => (
                     <TableRow key={ticket.id} className="group">
                       <TableCell>
                         <Link to={`/tickets/${ticket.id}`} className="hover:underline group-hover:text-blue-600">
@@ -491,21 +655,46 @@ const TicketsPage = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Assign Ticket</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("view", ticket)}>
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTicketAction("assign", ticket)}>
+                              Assign Ticket
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Reopen Ticket</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">Close Ticket</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateTicket(ticket.id, { status: "open" })}>
+                              Reopen Ticket
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleTicketAction("close", ticket)}
+                              className="text-red-600"
+                            >
+                              Close Ticket
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* New Ticket Dialog */}
+      <Dialog open={isNewTicketDialogOpen} onOpenChange={setIsNewTicketDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create New Ticket</DialogTitle>
+            <DialogDescription>
+              Fill in the details to create a new support ticket.
+            </DialogDescription>
+          </DialogHeader>
+          <NewTicketForm onClose={() => setIsNewTicketDialogOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
