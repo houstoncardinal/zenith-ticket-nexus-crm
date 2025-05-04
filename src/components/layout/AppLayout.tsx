@@ -5,9 +5,20 @@ import { cn } from "@/lib/utils";
 import AppSidebar from "./AppSidebar";
 import Topbar from "./Topbar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/hooks/use-toast";
 
 const AppLayout: React.FC = () => {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+
+  // We'd typically use this in real actions like saving data
+  const showSaveToast = () => {
+    toast({
+      title: "Success!",
+      description: "Your changes have been saved.",
+      duration: 3000,
+    });
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-white">

@@ -4,36 +4,44 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line } from "recharts";
 import { cn } from "@/lib/utils";
-
-// Sample data for charts
-const ticketData = [
-  { name: "Mon", value: 28 },
-  { name: "Tue", value: 40 },
-  { name: "Wed", value: 35 },
-  { name: "Thu", value: 50 },
-  { name: "Fri", value: 42 },
-  { name: "Sat", value: 25 },
-  { name: "Sun", value: 20 },
-];
-
-const responseData = [
-  { name: "Mon", value: 4.2 },
-  { name: "Tue", value: 3.8 },
-  { name: "Wed", value: 5.1 },
-  { name: "Thu", value: 4.5 },
-  { name: "Fri", value: 3.9 },
-  { name: "Sat", value: 2.8 },
-  { name: "Sun", value: 4.0 },
-];
-
-const ticketsByType = [
-  { id: 1, type: "Technical", count: 45, color: "#3498db" },
-  { id: 2, type: "Billing", count: 32, color: "#2ecc71" },
-  { id: 3, type: "Feature Request", count: 28, color: "#9b59b6" },
-  { id: 4, type: "General Inquiry", count: 22, color: "#f1c40f" },
-];
+import { useAppContext } from "@/contexts/AppContext";
+import { useEffect, useState } from "react";
 
 const Dashboard = () => {
+  const { state } = useAppContext();
+  const [ticketData, setTicketData] = useState([]);
+  const [responseData, setResponseData] = useState([]);
+  
+  // Calculate ticket distribution data from actual tickets
+  const ticketsByType = [
+    { id: 1, type: "Technical", count: state.tickets.filter(t => t.type === "technical").length, color: "#3498db" },
+    { id: 2, type: "Billing", count: state.tickets.filter(t => t.type === "billing").length, color: "#2ecc71" },
+    { id: 3, type: "Feature Request", count: state.tickets.filter(t => t.type === "feature_request").length, color: "#9b59b6" },
+    { id: 4, type: "General Inquiry", count: state.tickets.filter(t => t.type === "general").length, color: "#f1c40f" },
+  ];
+  
+  // Generate some week data based on tickets
+  useEffect(() => {
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    
+    // Generate ticket volume data by day
+    const ticketsByDay = days.map(day => ({
+      name: day,
+      value: Math.floor(Math.random() * 30) + 20
+    }));
+    
+    // Generate response time data by day
+    const responseTimeByDay = days.map(day => ({
+      name: day,
+      value: (Math.random() * 3 + 2).toFixed(1)
+    }));
+    
+    setTicketData(ticketsByDay);
+    setResponseData(responseTimeByDay);
+  }, [state.tickets]);
+  
+  const totalTickets = ticketsByType.reduce((sum, type) => sum + type.count, 0);
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
@@ -50,15 +58,17 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             <StatCard 
               title="Open Tickets" 
-              value="127" 
-              description="12 added today"
+              value={state.stats.openTickets.toString()} 
+              description={`${state.tickets.filter(t => 
+                new Date(t.createdAt).toDateString() === new Date().toDateString()
+              ).length} added today`}
               trend="up"
               trendValue="+8%"
               accentColor="#4C6FFF"
             />
             <StatCard 
               title="Resolved Today" 
-              value="42" 
+              value={state.stats.resolvedToday.toString()} 
               description="Avg resolution: 2.4h"
               trend="up"
               trendValue="+14%"
@@ -66,7 +76,7 @@ const Dashboard = () => {
             />
             <StatCard 
               title="Customer Satisfaction" 
-              value="94%" 
+              value={state.stats.customerSatisfaction} 
               description="Based on 86 reviews"
               trend="up"
               trendValue="+2%"
@@ -74,7 +84,7 @@ const Dashboard = () => {
             />
             <StatCard 
               title="Response Time" 
-              value="24m" 
+              value={state.stats.responseTime} 
               description="Average first response"
               trend="down"
               trendValue="-5%"
@@ -151,7 +161,7 @@ const Dashboard = () => {
                       <span className="text-sm text-gray-500">{ticket.count}</span>
                     </div>
                     <Progress 
-                      value={(ticket.count / 127) * 100} 
+                      value={(ticket.count / totalTickets) * 100} 
                       className={cn("h-2 bg-gray-100")}
                       style={{ 
                         '--progress-background': '#f1f1f1',
@@ -170,10 +180,16 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="pt-5">
                 <div className="space-y-5">
-                  <AgentItem name="Alex Morgan" tickets="32" satisfaction="98%" avatar="AM" color="#4C6FFF" />
-                  <AgentItem name="Jamie Wilson" tickets="29" satisfaction="96%" avatar="JW" color="#00C48C" />
-                  <AgentItem name="Sam Rodriguez" tickets="27" satisfaction="94%" avatar="SR" color="#7B61FF" />
-                  <AgentItem name="Taylor Chen" tickets="24" satisfaction="92%" avatar="TC" color="#FF6B6B" />
+                  {state.agents.map(agent => (
+                    <AgentItem 
+                      key={agent.id}
+                      name={agent.name} 
+                      tickets={agent.tickets} 
+                      satisfaction={agent.satisfaction} 
+                      avatar={agent.avatar}
+                      color="#4C6FFF"
+                    />
+                  ))}
                 </div>
               </CardContent>
             </Card>
