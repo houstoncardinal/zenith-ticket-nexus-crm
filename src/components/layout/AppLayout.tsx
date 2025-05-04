@@ -10,12 +10,14 @@ const AppLayout: React.FC = () => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-white">
       {!isMobile && <AppSidebar />}
-      <div className={cn("flex-1 flex flex-col h-full overflow-hidden")}>
+      <div className={cn("flex-1 flex flex-col h-full overflow-hidden border-l border-gray-100")}>
         <Topbar />
-        <main className="flex-1 overflow-auto p-4 md:p-6">
-          <Outlet />
+        <main className="flex-1 overflow-auto p-6 md:p-8 bg-gray-50/50">
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

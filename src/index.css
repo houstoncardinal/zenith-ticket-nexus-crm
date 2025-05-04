@@ -7,7 +7,7 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    --background: 0 0% 100%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -16,74 +16,86 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 204 80% 40%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 224 92% 65%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
 
-    --muted: 210 40% 96%;
+    --muted: 210 40% 98%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 183 74% 40%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 262 83% 68%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 47% 11%;
+    --warning: 40 96% 62%;
+    --warning-foreground: 0 0% 20%;
+
+    --destructive: 0 72% 70%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 95%;
+    --input: 220 13% 95%;
+    --ring: 224 92% 65%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 204 80% 50%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 224 92% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 183 74% 40%;
+    --sidebar-accent: 262 83% 68%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 215 20% 20%;
-    --sidebar-ring: 183 74% 40%;
+    --sidebar-border: 220 13% 95%;
+    --sidebar-ring: 262 83% 68%;
   }
 
   .dark {
-    --background: 222 47% 7%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
 
-    --card: 222 47% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 222 47% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 204 80% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 224 92% 65%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 217 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 183 74% 40%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 262 83% 68%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
 
-    --border: 217 32.6% 17.5%;
-    --input: 217 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --warning: 40 96% 62%;
+    --warning-foreground: 0 0% 20%;
+
+    --destructive: 0 72% 70%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 95%;
+    --input: 220 13% 95%;
+    --ring: 224 92% 65%;
     
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 204 80% 50%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 224 92% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 183 74% 40%;
+    --sidebar-accent: 262 83% 68%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 215 20% 20%;
-    --sidebar-ring: 183 74% 40%;
+    --sidebar-border: 220 13% 95%;
+    --sidebar-ring: 262 83% 68%;
   }
 }
 
@@ -93,7 +105,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-white text-foreground;
     font-family: 'Inter', sans-serif;
   }
 
@@ -102,7 +114,11 @@
   }
   
   .card-gradient {
-    @apply bg-gradient-to-br from-card to-secondary/80 shadow-md;
+    @apply bg-gradient-to-br from-white to-gray-50 shadow-sm border border-gray-100;
+  }
+  
+  .accent-top-bar {
+    @apply h-1 w-full;
   }
 }
 
@@ -112,4 +128,25 @@
   margin: 0;
   padding: 0;
   text-align: left;
+}
+
+/* Professional drop shadows */
+.shadow-card {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.shadow-dropdown {
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.05);
+}
+
+/* Subtle transitions */
+.subtle-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Progress bar custom styles */
+.custom-progress-bar {
+  height: 6px;
+  border-radius: 3px;
+  background-color: #f1f1f1;
 }

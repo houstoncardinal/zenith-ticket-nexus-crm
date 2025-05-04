@@ -35,24 +35,25 @@ const ticketsByType = [
 const Dashboard = () => {
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
+      <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
       
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="bg-white border border-gray-100 shadow-sm">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="overview" className="space-y-4">
+        <TabsContent value="overview" className="space-y-6">
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             <StatCard 
               title="Open Tickets" 
               value="127" 
               description="12 added today"
               trend="up"
               trendValue="+8%"
+              accentColor="#4C6FFF"
             />
             <StatCard 
               title="Resolved Today" 
@@ -60,6 +61,7 @@ const Dashboard = () => {
               description="Avg resolution: 2.4h"
               trend="up"
               trendValue="+14%"
+              accentColor="#00C48C"
             />
             <StatCard 
               title="Customer Satisfaction" 
@@ -67,6 +69,7 @@ const Dashboard = () => {
               description="Based on 86 reviews"
               trend="up"
               trendValue="+2%"
+              accentColor="#7B61FF"
             />
             <StatCard 
               title="Response Time" 
@@ -74,55 +77,56 @@ const Dashboard = () => {
               description="Average first response"
               trend="down"
               trendValue="-5%"
+              accentColor="#FF6B6B"
             />
           </div>
 
           {/* Charts row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tickets This Week</CardTitle>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <Card className="border border-gray-100 shadow-sm bg-white overflow-hidden">
+              <CardHeader className="bg-white border-b border-gray-50 pb-4">
+                <CardTitle className="text-lg font-medium text-gray-800">Tickets This Week</CardTitle>
                 <CardDescription>Daily ticket volume for the past 7 days</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-5">
                 <div className="h-[240px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={ticketData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="name" />
-                      <YAxis />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                      <YAxis axisLine={false} tickLine={false} />
                       <Tooltip 
-                        contentStyle={{ background: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--border))' }}
+                        contentStyle={{ background: '#fff', borderRadius: '8px', border: '1px solid #f1f1f1', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
                         formatter={(value) => [`${value} tickets`, 'Volume']}
                       />
-                      <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="value" fill="#4C6FFF" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Response Times</CardTitle>
+            <Card className="border border-gray-100 shadow-sm bg-white overflow-hidden">
+              <CardHeader className="bg-white border-b border-gray-50 pb-4">
+                <CardTitle className="text-lg font-medium text-gray-800">Response Times</CardTitle>
                 <CardDescription>Average daily response time in minutes</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-5">
                 <div className="h-[240px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={responseData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="name" />
-                      <YAxis />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                      <YAxis axisLine={false} tickLine={false} />
                       <Tooltip 
-                        contentStyle={{ background: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--border))' }}
+                        contentStyle={{ background: '#fff', borderRadius: '8px', border: '1px solid #f1f1f1', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
                         formatter={(value) => [`${value} min`, 'Time']}
                       />
                       <Line 
                         type="monotone" 
                         dataKey="value" 
-                        stroke="hsl(var(--accent))" 
+                        stroke="#7B61FF" 
                         strokeWidth={2} 
-                        dot={{ r: 4 }}
-                        activeDot={{ r: 6 }}
+                        dot={{ r: 4, fill: "#7B61FF" }}
+                        activeDot={{ r: 6, fill: "#7B61FF" }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -132,37 +136,38 @@ const Dashboard = () => {
           </div>
 
           {/* Ticket categories and Agent performance */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tickets by Type</CardTitle>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <Card className="border border-gray-100 shadow-sm bg-white">
+              <CardHeader className="bg-white border-b border-gray-50 pb-4">
+                <CardTitle className="text-lg font-medium text-gray-800">Tickets by Type</CardTitle>
                 <CardDescription>Distribution of current open tickets</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pt-5">
                 {ticketsByType.map(ticket => (
                   <div key={ticket.id}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium">{ticket.type}</span>
-                      <span className="text-sm text-muted-foreground">{ticket.count}</span>
+                      <span className="text-sm font-medium text-gray-700">{ticket.type}</span>
+                      <span className="text-sm text-gray-500">{ticket.count}</span>
                     </div>
-                    <Progress value={(ticket.count / 127) * 100} className="h-2" 
-                      style={{ backgroundColor: 'hsl(var(--secondary))', '--tw-gradient-from': ticket.color }} />
+                    <Progress value={(ticket.count / 127) * 100} className="h-2"
+                      style={{ backgroundColor: '#f1f1f1' }}
+                      indicatorStyle={{ backgroundColor: ticket.color }} />
                   </div>
                 ))}
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Agent Performance</CardTitle>
+            <Card className="border border-gray-100 shadow-sm bg-white">
+              <CardHeader className="bg-white border-b border-gray-50 pb-4">
+                <CardTitle className="text-lg font-medium text-gray-800">Agent Performance</CardTitle>
                 <CardDescription>Top performing support agents</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <AgentItem name="Alex Morgan" tickets="32" satisfaction="98%" avatar="AM" />
-                  <AgentItem name="Jamie Wilson" tickets="29" satisfaction="96%" avatar="JW" />
-                  <AgentItem name="Sam Rodriguez" tickets="27" satisfaction="94%" avatar="SR" />
-                  <AgentItem name="Taylor Chen" tickets="24" satisfaction="92%" avatar="TC" />
+              <CardContent className="pt-5">
+                <div className="space-y-5">
+                  <AgentItem name="Alex Morgan" tickets="32" satisfaction="98%" avatar="AM" color="#4C6FFF" />
+                  <AgentItem name="Jamie Wilson" tickets="29" satisfaction="96%" avatar="JW" color="#00C48C" />
+                  <AgentItem name="Sam Rodriguez" tickets="27" satisfaction="94%" avatar="SR" color="#7B61FF" />
+                  <AgentItem name="Taylor Chen" tickets="24" satisfaction="92%" avatar="TC" color="#FF6B6B" />
                 </div>
               </CardContent>
             </Card>
@@ -170,24 +175,24 @@ const Dashboard = () => {
         </TabsContent>
         
         <TabsContent value="analytics" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Analytics</CardTitle>
+          <Card className="border border-gray-100 shadow-sm bg-white">
+            <CardHeader className="bg-white border-b border-gray-50">
+              <CardTitle className="text-lg font-medium text-gray-800">Detailed Analytics</CardTitle>
               <CardDescription>Coming soon: More detailed analytics will appear here.</CardDescription>
             </CardHeader>
-            <CardContent className="h-[400px] flex items-center justify-center text-muted-foreground">
+            <CardContent className="h-[400px] flex items-center justify-center text-gray-500">
               Analytics dashboard is under development
             </CardContent>
           </Card>
         </TabsContent>
         
         <TabsContent value="reports" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Reports</CardTitle>
+          <Card className="border border-gray-100 shadow-sm bg-white">
+            <CardHeader className="bg-white border-b border-gray-50">
+              <CardTitle className="text-lg font-medium text-gray-800">Reports</CardTitle>
               <CardDescription>Coming soon: Generate and download reports.</CardDescription>
             </CardHeader>
-            <CardContent className="h-[400px] flex items-center justify-center text-muted-foreground">
+            <CardContent className="h-[400px] flex items-center justify-center text-gray-500">
               Reports feature is under development
             </CardContent>
           </Card>
@@ -203,18 +208,20 @@ interface StatCardProps {
   description: string;
   trend: "up" | "down" | "neutral";
   trendValue: string;
+  accentColor: string;
 }
 
-const StatCard = ({ title, value, description, trend, trendValue }: StatCardProps) => {
+const StatCard = ({ title, value, description, trend, trendValue, accentColor }: StatCardProps) => {
   return (
-    <Card>
+    <Card className="border border-gray-100 shadow-sm bg-white overflow-hidden">
+      <div className="h-1" style={{ backgroundColor: accentColor }}></div>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium text-gray-500">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold text-gray-800">{value}</div>
         <div className="flex items-center mt-1">
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-xs text-gray-500">{description}</p>
           <div className={`ml-auto text-xs font-medium ${
             trend === "up" ? "text-emerald-500" : 
             trend === "down" ? "text-rose-500" : "text-amber-500"
@@ -232,21 +239,22 @@ interface AgentItemProps {
   tickets: string;
   satisfaction: string;
   avatar: string;
+  color: string;
 }
 
-const AgentItem = ({ name, tickets, satisfaction, avatar }: AgentItemProps) => {
+const AgentItem = ({ name, tickets, satisfaction, avatar, color }: AgentItemProps) => {
   return (
     <div className="flex items-center">
-      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium text-sm">
+      <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-medium text-sm" style={{ backgroundColor: color }}>
         {avatar}
       </div>
       <div className="ml-3">
-        <p className="text-sm font-medium">{name}</p>
-        <p className="text-xs text-muted-foreground">{tickets} tickets resolved</p>
+        <p className="text-sm font-medium text-gray-800">{name}</p>
+        <p className="text-xs text-gray-500">{tickets} tickets resolved</p>
       </div>
       <div className="ml-auto">
-        <span className="text-sm font-medium">{satisfaction}</span>
-        <p className="text-xs text-muted-foreground text-right">satisfaction</p>
+        <span className="text-sm font-medium text-gray-800">{satisfaction}</span>
+        <p className="text-xs text-gray-500 text-right">satisfaction</p>
       </div>
     </div>
   );
