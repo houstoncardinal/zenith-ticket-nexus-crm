@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line } from "recharts";
+import { cn } from "@/lib/utils";
 
 // Sample data for charts
 const ticketData = [
@@ -149,9 +150,14 @@ const Dashboard = () => {
                       <span className="text-sm font-medium text-gray-700">{ticket.type}</span>
                       <span className="text-sm text-gray-500">{ticket.count}</span>
                     </div>
-                    <Progress value={(ticket.count / 127) * 100} className="h-2"
-                      style={{ backgroundColor: '#f1f1f1' }}
-                      indicatorStyle={{ backgroundColor: ticket.color }} />
+                    <Progress 
+                      value={(ticket.count / 127) * 100} 
+                      className={cn("h-2 bg-gray-100")}
+                      style={{ 
+                        '--progress-background': '#f1f1f1',
+                        '--progress-foreground': ticket.color
+                      } as React.CSSProperties}
+                    />
                   </div>
                 ))}
               </CardContent>
