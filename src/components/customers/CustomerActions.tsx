@@ -35,16 +35,12 @@ export function CustomerActions({ customer }: CustomerActionsProps) {
 
   const handleDelete = () => {
     deleteCustomer(customer.id);
-    toast({
-      description: `${customer.name} has been removed.`,
-    });
+    toast(`${customer.name} has been removed.`);
   };
 
   const handleReactivate = () => {
     updateCustomer(customer.id, { status: "active" });
-    toast({
-      description: `${customer.name} has been reactivated.`,
-    });
+    toast(`${customer.name} has been reactivated.`);
   };
 
   const handleCreateTicket = () => {

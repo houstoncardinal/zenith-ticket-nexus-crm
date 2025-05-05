@@ -56,16 +56,18 @@ export function AddCustomerForm() {
   });
 
   function onSubmit(values: FormValues) {
-    // Since we're using Zod validation, name will never be undefined here
+    // The name is now guaranteed to be a string since we're using Zod validation
     addCustomer({
-      ...values,
+      name: values.name,
+      email: values.email,
+      company: values.company,
+      phone: values.phone,
+      status: values.status,
       tickets: 0,
       spent: "$0",
     });
 
-    toast({
-      description: `${values.name} has been added successfully.`,
-    });
+    toast(`${values.name} has been added successfully.`);
     
     form.reset();
     setOpen(false);
