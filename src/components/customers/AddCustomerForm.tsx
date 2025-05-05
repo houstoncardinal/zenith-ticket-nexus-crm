@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { 
   Dialog,
   DialogContent,
@@ -56,6 +56,7 @@ export function AddCustomerForm() {
   });
 
   function onSubmit(values: FormValues) {
+    // Since we're using Zod validation, name will never be undefined here
     addCustomer({
       ...values,
       tickets: 0,
@@ -63,7 +64,6 @@ export function AddCustomerForm() {
     });
 
     toast({
-      title: "Customer added",
       description: `${values.name} has been added successfully.`,
     });
     

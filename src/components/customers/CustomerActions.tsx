@@ -22,7 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MoreHorizontal } from "lucide-react";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 interface CustomerActionsProps {
   customer: Customer;
@@ -36,7 +36,6 @@ export function CustomerActions({ customer }: CustomerActionsProps) {
   const handleDelete = () => {
     deleteCustomer(customer.id);
     toast({
-      title: "Customer deleted",
       description: `${customer.name} has been removed.`,
     });
   };
@@ -44,7 +43,6 @@ export function CustomerActions({ customer }: CustomerActionsProps) {
   const handleReactivate = () => {
     updateCustomer(customer.id, { status: "active" });
     toast({
-      title: "Customer reactivated",
       description: `${customer.name} has been reactivated.`,
     });
   };
