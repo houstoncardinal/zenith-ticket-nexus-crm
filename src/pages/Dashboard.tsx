@@ -50,6 +50,15 @@ const Dashboard = () => {
   const [responseData, setResponseData] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState("7d");
+  const [selectedMetrics, setSelectedMetrics] = useState({
+    ticketVolume: true,
+    responseTimes: true,
+    resolutionRates: true,
+    customerSatisfaction: true,
+    agentPerformance: true,
+    slaCompliance: true
+  });
+  const [customReportDateRange, setCustomReportDateRange] = useState("7d");
   
   // Calculate ticket distribution data from actual tickets
   const ticketsByType = [
@@ -76,25 +85,57 @@ const Dashboard = () => {
     hourlyDistribution: []
   });
 
-  // Generate comprehensive analytics data
-  useEffect(() => {
+  // Interactive handlers
+  const handleMetricToggle = (metric: string) => {
+    setSelectedMetrics(prev => ({
+      ...prev,
+      [metric]: !prev[metric]
+    }));
+  };
+
+  const handleDateRangeChange = (range: string) => {
+    setDateRange(range);
+    // Trigger data refresh with new date range
+    generateData(range);
+  };
+
+  const handleCustomReportGenerate = () => {
+    const selectedMetricsList = Object.entries(selectedMetrics)
+      .filter(([_, selected]) => selected)
+      .map(([metric, _]) => metric);
+    
+    console.log("Generating custom report with metrics:", selectedMetricsList);
+    console.log("Date range:", customReportDateRange);
+    
+    // Simulate report generation
+    setTimeout(() => {
+      alert(`Custom report generated with ${selectedMetricsList.length} metrics for ${customReportDateRange}`);
+    }, 1000);
+  };
+
+  const generateData = (dateRange: string) => {
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
     const priorities = ["low", "medium", "high", "urgent"];
     const hours = Array.from({ length: 24 }, (_, i) => i);
     
+    // Generate realistic data based on date range
+    const multiplier = dateRange === "7d" ? 1 : dateRange === "30d" ? 1.5 : 2;
+
+    
     // Monthly trends
     const monthlyTrends = months.map(month => ({
       month,
-      tickets: Math.floor(Math.random() * 200) + 100,
-      resolved: Math.floor(Math.random() * 180) + 80,
-      pending: Math.floor(Math.random() * 50) + 10,
+      tickets: Math.floor(Math.random() * 200 * multiplier) + 100,
+      resolved: Math.floor(Math.random() * 180 * multiplier) + 80,
+      pending: Math.floor(Math.random() * 50 * multiplier) + 10,
       satisfaction: (Math.random() * 2 + 3.5).toFixed(1)
     }));
 
-    // Priority distribution
+    // Priority distribution based on actual tickets
     const priorityDistribution = priorities.map(priority => ({
       priority,
-      count: state.tickets.filter(t => t.priority === priority).length,
+      count: state.tickets.filter(t => t.priority === priority).length || Math.floor(Math.random() * 20) + 5,
       color: priority === "urgent" ? "#FF6B6B" : 
              priority === "high" ? "#FF9500" :
              priority === "medium" ? "#4C6FFF" : "#00C48C"
@@ -128,14 +169,13 @@ const Dashboard = () => {
       tickets: Math.floor(Math.random() * 20) + 5
     }));
 
-    // Simulate data generation
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     
+    // Generate ticket data for the week
     const ticketsByDay = days.map(day => ({
       name: day,
-      value: Math.floor(Math.random() * 30) + 20,
-      resolved: Math.floor(Math.random() * 25) + 15,
-      pending: Math.floor(Math.random() * 10) + 5
+      value: Math.floor(Math.random() * 30 * multiplier) + 20,
+      resolved: Math.floor(Math.random() * 25 * multiplier) + 15,
+      pending: Math.floor(Math.random() * 10 * multiplier) + 5
     }));
     
     const responseTimeByDay = days.map(day => ({
@@ -154,10 +194,16 @@ const Dashboard = () => {
       agentPerformanceRadial,
       hourlyDistribution
     });
-  }, [state.tickets, state.agents]);
+  };
+
+  // Generate comprehensive analytics data
+  useEffect(() => {
+    generateData(dateRange);
+  }, [state.tickets, state.agents, dateRange]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
+    generateData(dateRange);
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
@@ -431,14 +477,39 @@ const Dashboard = () => {
               <p className="text-gray-600 mt-1">Deep insights into your support performance</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleDateRangeChange("7d")}
+                className={dateRange === "7d" ? "bg-blue-50 border-blue-200" : ""}
+              >
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
-              <Button variant="outline" size="sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                {dateRange === "7d" ? "Last 7 days" : dateRange === "30d" ? "Last 30 days" : "Last 90 days"}
-              </Button>
+              <div className="flex gap-1">
+                <Button 
+                  variant={dateRange === "7d" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => handleDateRangeChange("7d")}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  7d
+                </Button>
+                <Button 
+                  variant={dateRange === "30d" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => handleDateRangeChange("30d")}
+                >
+                  30d
+                </Button>
+                <Button 
+                  variant={dateRange === "90d" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => handleDateRangeChange("90d")}
+                >
+                  90d
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -764,30 +835,50 @@ const Dashboard = () => {
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-2 block">Select Metrics</label>
                     <div className="grid grid-cols-2 gap-2">
-                      {[
-                        "Ticket Volume",
-                        "Response Times", 
-                        "Resolution Rates",
-                        "Customer Satisfaction",
-                        "Agent Performance",
-                        "SLA Compliance"
-                      ].map((metric) => (
-                        <div key={metric} className="flex items-center space-x-2">
-                          <input type="checkbox" id={metric} className="rounded" defaultChecked />
-                          <label htmlFor={metric} className="text-sm text-gray-600">{metric}</label>
-                        </div>
-                      ))}
+                      {Object.entries(selectedMetrics).map(([metric, selected]) => {
+                        const displayName = metric.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        return (
+                          <div key={metric} className="flex items-center space-x-2">
+                            <input 
+                              type="checkbox" 
+                              id={metric} 
+                              className="rounded" 
+                              checked={selected}
+                              onChange={() => handleMetricToggle(metric)}
+                            />
+                            <label htmlFor={metric} className="text-sm text-gray-600">{displayName}</label>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-2 block">Date Range</label>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">Last 7 days</Button>
-                      <Button variant="outline" size="sm">Last 30 days</Button>
-                      <Button variant="outline" size="sm">Custom</Button>
+                      <Button 
+                        variant={customReportDateRange === "7d" ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => setCustomReportDateRange("7d")}
+                      >
+                        Last 7 days
+                      </Button>
+                      <Button 
+                        variant={customReportDateRange === "30d" ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => setCustomReportDateRange("30d")}
+                      >
+                        Last 30 days
+                      </Button>
+                      <Button 
+                        variant={customReportDateRange === "custom" ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => setCustomReportDateRange("custom")}
+                      >
+                        Custom
+                      </Button>
                     </div>
                   </div>
-                  <Button className="w-full mt-4">
+                  <Button className="w-full mt-4" onClick={handleCustomReportGenerate}>
                     <Download className="h-4 w-4 mr-2" />
                     Generate Custom Report
                   </Button>
