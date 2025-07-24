@@ -10,6 +10,8 @@ import TicketsPage from "./pages/TicketsPage";
 import TicketDetail from "./pages/TicketDetail";
 import CustomersPage from "./pages/CustomersPage";
 import CustomerDetail from "./pages/CustomerDetail";
+import AgentsPage from "./pages/AgentsPage";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "./contexts/AppContext";
 
@@ -29,6 +31,8 @@ const App = () => (
               <Route path="/tickets/:id" element={<TicketDetail />} />
               <Route path="/customers" element={<CustomersPage />} />
               <Route path="/customers/:id" element={<CustomerDetail />} />
+              <Route path="/agents" element={<AgentsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

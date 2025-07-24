@@ -25,7 +25,7 @@ const sidebarItems: SidebarItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/", color: "#4C6FFF" },
   { icon: Ticket, label: "Tickets", href: "/tickets", color: "#00C48C" },
   { icon: Users, label: "Customers", href: "/customers", color: "#7B61FF" },
-  { icon: MessageSquare, label: "Messages", href: "/messages", color: "#FF6B6B" },
+  { icon: Users, label: "Agents", href: "/agents", color: "#FF6B6B" },
   { icon: BarChart3, label: "Reports", href: "/reports", color: "#FFAB2D" },
   { icon: Settings, label: "Settings", href: "/settings", color: "#6E7891" },
 ];

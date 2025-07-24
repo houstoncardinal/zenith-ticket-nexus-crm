@@ -1,4 +1,5 @@
 
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
@@ -43,9 +44,12 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/contexts/AppContext";
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const { state } = useAppContext();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [ticketData, setTicketData] = useState([]);
   const [responseData, setResponseData] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -247,53 +251,70 @@ const Dashboard = () => {
         <TabsContent value="overview" className="space-y-6 animate-fade-in">
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            <StatCard 
-              title="Open Tickets" 
-              value={state.stats.openTickets.toString()} 
-              description={`${state.tickets.filter(t => 
-                new Date(t.createdAt).toDateString() === new Date().toDateString()
-              ).length} added today`}
-              trend="up"
-              trendValue="+8%"
-              accentColor="#4C6FFF"
-              icon={<MessageSquare className="h-5 w-5" />}
-              delay="0ms"
-            />
-            <StatCard 
-              title="Resolved Today" 
-              value={state.stats.resolvedToday.toString()} 
-              description="Avg resolution: 2.4h"
-              trend="up"
-              trendValue="+14%"
-              accentColor="#00C48C"
-              icon={<CheckCircle className="h-5 w-5" />}
-              delay="100ms"
-            />
-            <StatCard 
-              title="Customer Satisfaction" 
-              value={state.stats.customerSatisfaction} 
-              description="Based on 86 reviews"
-              trend="up"
-              trendValue="+2%"
-              accentColor="#7B61FF"
-              icon={<Star className="h-5 w-5" />}
-              delay="200ms"
-            />
-            <StatCard 
-              title="Response Time" 
-              value={state.stats.responseTime} 
-              description="Average first response"
-              trend="down"
-              trendValue="-5%"
-              accentColor="#FF6B6B"
-              icon={<Clock className="h-5 w-5" />}
-              delay="300ms"
-            />
+            <div onClick={() => navigate('/tickets')} className="cursor-pointer">
+              <StatCard 
+                title="Open Tickets" 
+                value={state.stats.openTickets.toString()} 
+                description={`${state.tickets.filter(t => 
+                  new Date(t.createdAt).toDateString() === new Date().toDateString()
+                ).length} added today`}
+                trend="up"
+                trendValue="+8%"
+                accentColor="#4C6FFF"
+                icon={<MessageSquare className="h-5 w-5" />}
+                delay="0ms"
+              />
+            </div>
+            <div onClick={() => navigate('/tickets?filter=resolved')} className="cursor-pointer">
+              <StatCard 
+                title="Resolved Today" 
+                value={state.stats.resolvedToday.toString()} 
+                description="Avg resolution: 2.4h"
+                trend="up"
+                trendValue="+14%"
+                accentColor="#00C48C"
+                icon={<CheckCircle className="h-5 w-5" />}
+                delay="100ms"
+              />
+            </div>
+            <div onClick={() => navigate('/customers')} className="cursor-pointer">
+              <StatCard 
+                title="Customer Satisfaction" 
+                value={state.stats.customerSatisfaction} 
+                description="Based on 86 reviews"
+                trend="up"
+                trendValue="+2%"
+                accentColor="#7B61FF"
+                icon={<Star className="h-5 w-5" />}
+                delay="200ms"
+              />
+            </div>
+            <div onClick={() => {
+              toast({
+                title: "Response Time Details",
+                description: "View detailed response time analytics in the Analytics tab",
+              });
+            }} className="cursor-pointer">
+              <StatCard 
+                title="Response Time" 
+                value={state.stats.responseTime} 
+                description="Average first response"
+                trend="down"
+                trendValue="-5%"
+                accentColor="#FF6B6B"
+                icon={<Clock className="h-5 w-5" />}
+                delay="300ms"
+              />
+            </div>
           </div>
 
           {/* Charts row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <Card className="border border-gray-100 shadow-sm bg-white overflow-hidden hover-scale transition-all duration-300 animate-fade-in" style={{ animationDelay: "400ms" }}>
+            <Card 
+              className="border border-gray-100 shadow-sm bg-white overflow-hidden hover-scale transition-all duration-300 animate-fade-in cursor-pointer" 
+              style={{ animationDelay: "400ms" }}
+              onClick={() => navigate('/tickets')}
+            >
               <CardHeader className="bg-white border-b border-gray-50 pb-4">
                 <CardTitle className="text-lg font-medium text-gray-800 flex items-center">
                   <BarChart3 className="h-5 w-5 mr-2 text-blue-500" />
@@ -327,7 +348,16 @@ const Dashboard = () => {
               </CardContent>
             </Card>
             
-            <Card className="border border-gray-100 shadow-sm bg-white overflow-hidden hover-scale transition-all duration-300 animate-fade-in" style={{ animationDelay: "500ms" }}>
+            <Card 
+              className="border border-gray-100 shadow-sm bg-white overflow-hidden hover-scale transition-all duration-300 animate-fade-in cursor-pointer" 
+              style={{ animationDelay: "500ms" }}
+              onClick={() => {
+                toast({
+                  title: "Response Time Analytics",
+                  description: "View detailed response time analysis in Analytics tab",
+                });
+              }}
+            >
               <CardHeader className="bg-white border-b border-gray-50 pb-4">
                 <CardTitle className="text-lg font-medium text-gray-800 flex items-center">
                   <Clock className="h-5 w-5 mr-2 text-purple-500" />
@@ -381,7 +411,11 @@ const Dashboard = () => {
 
           {/* Ticket categories and Agent performance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <Card className="border border-gray-100 shadow-sm bg-white hover-scale transition-all duration-300 animate-fade-in" style={{ animationDelay: "600ms" }}>
+            <Card 
+              className="border border-gray-100 shadow-sm bg-white hover-scale transition-all duration-300 animate-fade-in cursor-pointer" 
+              style={{ animationDelay: "600ms" }}
+              onClick={() => navigate('/tickets')}
+            >
               <CardHeader className="bg-white border-b border-gray-50 pb-4">
                 <CardTitle className="text-lg font-medium text-gray-800 flex items-center">
                   <PieChartIcon className="h-5 w-5 mr-2 text-green-500" />
@@ -442,7 +476,11 @@ const Dashboard = () => {
               </CardContent>
             </Card>
             
-            <Card className="border border-gray-100 shadow-sm bg-white hover-scale transition-all duration-300 animate-fade-in" style={{ animationDelay: "700ms" }}>
+            <Card 
+              className="border border-gray-100 shadow-sm bg-white hover-scale transition-all duration-300 animate-fade-in cursor-pointer" 
+              style={{ animationDelay: "700ms" }}
+              onClick={() => navigate('/agents')}
+            >
               <CardHeader className="bg-white border-b border-gray-50 pb-4">
                 <CardTitle className="text-lg font-medium text-gray-800 flex items-center">
                   <Users className="h-5 w-5 mr-2 text-indigo-500" />
